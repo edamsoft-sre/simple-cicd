@@ -7,3 +7,8 @@ variable "deployment_yaml" {
   type = string
   description = "Kubernetes Deploy Manifest"
 }
+
+variable "image_name" {
+  type = string
+  description = "The image to be deployed"
+}

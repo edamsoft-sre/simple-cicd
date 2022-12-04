@@ -17,4 +17,4 @@ spec:
     spec:
       containers:
       - name: turo-test
-        image: docker.io/edamsoft/turo:2-dd29288
+        image: docker_image_replace

@@ -4,9 +4,13 @@ resource "kubernetes_namespace_v1" "turo" {
   }
 }
 
+locals {
+  deploy_yaml = yamldecode(replace(file(var.deployment_yaml), "docker_image_replace", var.image_name))
+}
+
 resource "kubernetes_manifest" "turo-test-deployment" {
 
-  manifest = yamldecode(file(var.deployment_yaml))
+  manifest = local.deploy_yaml
 
   field_manager {
     # set the name of the field manager
