@@ -12,3 +12,8 @@ variable "image_name" {
   type = string
   description = "The image to be deployed"
 }
+
+variable "missing_var" {
+  type = string
+  description = "Used just for testing tfvars auto-updates"
+}
