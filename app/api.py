@@ -10,8 +10,8 @@ from fastapi.responses import FileResponse
 app = FastAPI()
 counter_lock = asyncio.Lock()
 counter = 0
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
 
 
 # serve HTML template with per process counter
@@ -27,7 +27,7 @@ async def index(request: Request):
 # serve static html file
 @app.get("/page1")
 async def read_index():
-    return FileResponse('static/page1.html')
+    return FileResponse('app/static/page1.html')
 
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000)
