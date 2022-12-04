@@ -11,6 +11,7 @@ fi
 if [ -z "$1" ]
   then
     echo "No build number supplied"
+    exit
 else
   export BUILD_NO=$1
 fi
@@ -24,8 +25,11 @@ fi
 
 export VERSION=${BUILD_NO}-$(git rev-parse --short HEAD)
 export IMAGE_TAG="${HOST}:${VERSION}"
+echo "building image: ${IMAGE_TAG}"
 docker build -t ${IMAGE_TAG} .
 echo "Built image ${IMAGE_TAG}"
 docker push "${IMAGE_TAG}"
 echo "Pushed image"
-echo "${IMAGE_TAG}"
+timestamp=$(date +%s)
+mkdir -p builds
+echo "${IMAGE_TAG}" > builds/${BUILD_NO}_$timestamp
