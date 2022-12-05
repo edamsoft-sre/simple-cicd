@@ -9,7 +9,9 @@ from subprocess import STDOUT, PIPE, CalledProcessError, TimeoutExpired
 from pathlib import Path
 from typing import Optional
 
-TFVARS_FILE = "deploy/deploy.auto.tfvars"
+TF_PATH = "deploy"
+TFVARS_FILE = f"{TF_PATH}/deploy.auto.tfvars"
+KUBECONFIG_PATH = os.getenv("KUBE_CONFIG_PATH")
 DOCKER_REPO = "docker.io/edamsoft/turo"
 ACCOUNT = "edam-software"
 REPO = "turo"
@@ -67,17 +69,16 @@ def commit_changes(image_tag: str) -> bool:
     return True
 
 
-def pull_request(account: str, repo: str, token: str, head: str,
+def pull_request(account: str, repo: str, token: str, head: str, plan: str,
                  base: Optional[str] = "main",
                  title: Optional[str] = None,
-                 body: Optional[str] = None) -> bool:
+                 ) -> bool:
     if title is None:
         commit = head.split("_")[1]
         title = f"Requesting approval to deploy image {commit}"
-    if body is None:
-        body = f"Please review deploy change in {head}"
+    body = f"Please review terraform plan for branch {head}:\n {plan}"
     headers = {"Authorization": f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
-    data = {"title": title, "body": body, "head": head, "base": base}
+    data = {"title": title, "body": body, "head": head, "base": base, }
 
     try:
         url = GITHUB_PULL.format(account, repo)
@@ -92,7 +93,7 @@ def pull_request(account: str, repo: str, token: str, head: str,
     try:
         print(response['url'])
     except KeyError as k:
-        print(response['message'])
+        print(f"Error creating pull request:\n{response['message']}")
         return False
     return True
 
@@ -107,7 +108,15 @@ def push_changes(branch: str) -> bool:
     return True
 
 
-def run_tf_plan() -> bool:
+def run_tf_plan(tf_path: str) -> str | None:
+    try:
+        os.chdir(tf_path)
+        plan = subprocess.run(["terraform", "plan", "-no-color"],
+                              stdout=PIPE, stderr=STDOUT, timeout=30)
+    except CalledProcessError as error:
+        print(error)
+        return None
+    return plan.stdout.decode()
 
 
 def main(image_tag: str,
@@ -122,8 +131,8 @@ def main(image_tag: str,
     replace_key(tfvars_file, key, new_image)
     commit_changes(image_tag) or sys.exit(1)
     push_changes(branch) or sys.exit(1)
-    plan = run_tf_plan()
-    if plan:
+    plan = run_tf_plan(TF_PATH)
+    if 'Terraform will perform the following actions' in plan:
         pull_request(ACCOUNT, REPO, TOKEN, branch, plan) or sys.exit(1)
     else:
         print("Error generating Terraform plan for PR")
