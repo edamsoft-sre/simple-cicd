@@ -164,7 +164,7 @@ def main(image_tag: str,
     key = "image_name"
     new_image = f"{docker_repo}:{image_tag}"
     branch = f"{branch_prefix}_{image_tag}"
-    clone_repo(github_account, github_repo) or sys.exit(1)
+    # clone_repo(github_account, github_repo) or sys.exit(1)
     fetch_updates() or sys.exit(1)
     create_branch(branch) or sys.exit(1)
     replace_key(tfvars_file, key, new_image)
