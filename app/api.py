@@ -1,3 +1,4 @@
+import os
 import asyncio
 import uvicorn
 from fastapi import FastAPI, Request
@@ -19,9 +20,10 @@ templates = Jinja2Templates(directory="app/templates")
 @app.get("/index.html", response_class=HTMLResponse)
 async def index(request: Request):
     global counter
+    display_value = os.getenv('DISPLAY_VALUE')
     async with counter_lock:
         counter += 1
-    return templates.TemplateResponse("index.html", {"request": request, "counter": counter})
+    return templates.TemplateResponse("index.html", {"request": request, "counter": counter, "display": display_value})
 
 
 # serve static html file
