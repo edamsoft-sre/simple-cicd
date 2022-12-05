@@ -19,11 +19,16 @@ variable "kube_namespace" {
 }
 
 variable "ssl_service_yaml" {
-  type = string
+  type        = string
   description = "Kubernetes SSL Service Manifest"
 }
 
 variable "acm_arn" {
-  type = string
+  type        = string
   description = "AWS ACM arn value for SSL service"
+}
+
+variable "display_value" {
+  type        = string
+  description = "Value to display via environment variable"
 }
