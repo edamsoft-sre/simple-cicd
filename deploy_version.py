@@ -70,7 +70,10 @@ def create_branch(branch: str) -> bool:
     try:
         newbranch = subprocess.run(["git", "checkout", "-b", branch],
                                    stdout=PIPE, stderr=STDOUT, timeout=15)
-        print(newbranch.stdout.decode())
+        newbranch = newbranch.stdout.decode()
+        print(newbranch)
+        if 'already exists' in newbranch:
+            return False
     except CalledProcessError as error:
         print(error)
         return False
@@ -96,7 +99,7 @@ def pull_request(account: str, repo: str, token: str, head: str, plan: str,
     if title is None:
         title = f"Requesting approval to deploy image {commit}"
     else:
-        title = f"Requesting approval to deploy image {commit} - {title}"
+        title = f"{title} Request to deploy image {commit} "
     body = f"Please review terraform plan for branch {head}:\n {plan}"
     headers = {"Authorization": f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
     data = {"title": title, "body": body, "head": head, "base": base, }
