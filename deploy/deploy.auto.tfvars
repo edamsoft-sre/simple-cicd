@@ -1,4 +1,4 @@
-kube_config_context = "minikube" #"devops-interview"
+kube_config_context = "devops-interview"
 deployment_yaml     = "manifests/deploy.yaml"
-image_name          = "docker.io/edamsoft/turo/3-fc5c97c"
+image_name          = "docker.io/edamsoft/turo:1-4508a6c"
 kube_namespace      = "eric-testing"

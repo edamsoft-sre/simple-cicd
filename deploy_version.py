@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.11
 import os
 import sys
+import shutil
 import tempfile
 import typer
 import subprocess
@@ -9,12 +10,13 @@ from subprocess import STDOUT, PIPE, CalledProcessError, TimeoutExpired
 from pathlib import Path
 from typing import Optional
 
+TMP_DIR = "/tmp/cicd_temp"
 TF_PATH = "deploy"
 TFVARS_FILE = f"{TF_PATH}/deploy.auto.tfvars"
 KUBECONFIG_PATH = os.getenv("KUBE_CONFIG_PATH")
 DOCKER_REPO = "docker.io/edamsoft/turo"
 ACCOUNT = "edam-software"
-REPO = "turo"
+REPO = "simple-cicd"
 TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_PULL = "https://api.github.com/repos/{}/{}/pulls"
 
@@ -31,6 +33,23 @@ def replace_key(filename: str, key: str, value: str) -> None:
         Path.unlink(file)
         temp = Path(f_out.name)
         temp.rename(filename)
+
+
+def clone_repo(account: str, repo: str, temp_dir: str = TMP_DIR) -> bool:
+    directory = Path(temp_dir)
+    if directory.exists():
+        shutil.rmtree(temp_dir)
+    os.mkdir(temp_dir)
+    os.chdir(temp_dir)
+    try:
+        clone = subprocess.run(["git", "clone", f"https://github.com/{account}/{repo}.git"],
+                               stdout=PIPE, stderr=STDOUT, timeout=15)
+        print(clone.stdout.decode())
+        os.chdir(repo)
+    except CalledProcessError as error:
+        print(error)
+        return False
+    return True
 
 
 def fetch_updates() -> bool:
@@ -108,32 +127,50 @@ def push_changes(branch: str) -> bool:
     return True
 
 
-def run_tf_plan(tf_path: str) -> str | None:
+def tf_init(tf_path: str) -> bool:
     try:
         os.chdir(tf_path)
-        plan = subprocess.run(["terraform", "plan", "-no-color"],
+        init = subprocess.run(["terraform", "init"],
+                              stdout=PIPE, stderr=STDOUT, timeout=30)
+    except CalledProcessError as error:
+        print(error)
+        return False
+    output = init.stdout.decode()
+    print(output)
+    return True
+
+
+def run_tf_plan(tf_path: str) -> str | None:
+    try:
+        plan = subprocess.run(["terraform", "plan", "-no-color", "-out", "tfplan"],
                               stdout=PIPE, stderr=STDOUT, timeout=30)
     except CalledProcessError as error:
         print(error)
         return None
-    return plan.stdout.decode()
+    output = plan.stdout.decode()
+    print(output)
+    return output
 
 
 def main(image_tag: str,
          tfvars_file: Optional[str] = typer.Argument(TFVARS_FILE),
          docker_repo: Optional[str] = typer.Argument(DOCKER_REPO),
+         github_repo: Optional[str] = typer.Argument(REPO),
+         github_account: Optional[str] = typer.Argument(ACCOUNT),
          branch_prefix: Optional[str] = typer.Argument("deploy")):
     key = "image_name"
-    new_image = f"{docker_repo}/{image_tag}"
+    new_image = f"{docker_repo}:{image_tag}"
     branch = f"{branch_prefix}_{image_tag}"
+    clone_repo(github_account, github_repo) or sys.exit(1)
     fetch_updates() or sys.exit(1)
     create_branch(branch) or sys.exit(1)
     replace_key(tfvars_file, key, new_image)
     commit_changes(image_tag) or sys.exit(1)
     push_changes(branch) or sys.exit(1)
+    tf_init(TF_PATH) or sys.exit(1)
     plan = run_tf_plan(TF_PATH)
     if 'Terraform will perform the following actions' in plan:
-        pull_request(ACCOUNT, REPO, TOKEN, branch, plan) or sys.exit(1)
+        pull_request(github_account, github_repo, TOKEN, branch, plan) or sys.exit(1)
     else:
         print("Error generating Terraform plan for PR")
         sys.exit(1)

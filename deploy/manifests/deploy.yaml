@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: turo-test
-  namespace: turo
+  namespace: kube_namespace
   annotations:
     env: dev
 spec:
