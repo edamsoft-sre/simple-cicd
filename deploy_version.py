@@ -92,9 +92,11 @@ def pull_request(account: str, repo: str, token: str, head: str, plan: str,
                  base: Optional[str] = "main",
                  title: Optional[str] = None,
                  ) -> bool:
+    commit = head.split("_")[1]
     if title is None:
-        commit = head.split("_")[1]
         title = f"Requesting approval to deploy image {commit}"
+    else:
+        title = f"Requesting approval to deploy image {commit} - {title}"
     body = f"Please review terraform plan for branch {head}:\n {plan}"
     headers = {"Authorization": f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
     data = {"title": title, "body": body, "head": head, "base": base, }
@@ -153,6 +155,7 @@ def run_tf_plan(tf_path: str) -> str | None:
 
 
 def main(image_tag: str,
+         title: Optional[str] = typer.Argument(''),
          tfvars_file: Optional[str] = typer.Argument(TFVARS_FILE),
          docker_repo: Optional[str] = typer.Argument(DOCKER_REPO),
          github_repo: Optional[str] = typer.Argument(REPO),
@@ -170,7 +173,7 @@ def main(image_tag: str,
     tf_init(TF_PATH) or sys.exit(1)
     plan = run_tf_plan(TF_PATH)
     if 'Terraform will perform the following actions' in plan:
-        pull_request(github_account, github_repo, TOKEN, branch, plan) or sys.exit(1)
+        pull_request(github_account, github_repo, TOKEN, branch, plan, title) or sys.exit(1)
     else:
         print("Error generating Terraform plan for PR")
         sys.exit(1)
