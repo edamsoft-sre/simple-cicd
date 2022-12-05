@@ -13,7 +13,7 @@ variable "image_name" {
   description = "The image to be deployed"
 }
 
-variable "missing_var" {
+variable "kube_namespace" {
   type        = string
-  description = "Used just for testing tfvars auto-updates"
+  description = "Kube namespace to create and deploy app to"
 }

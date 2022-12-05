@@ -1,6 +1,6 @@
 resource "kubernetes_namespace_v1" "turo" {
   metadata {
-    name = "turo"
+    name = var.kube_namespace
   }
 }
 
