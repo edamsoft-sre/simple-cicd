@@ -18,3 +18,14 @@ spec:
       containers:
       - name: turo-test
         image: docker_image_replace
+        env:
+          - name: DISPLAY_VALUE
+            valueFrom:
+              configMapKeyRef:
+                name: index-display
+                key: display_value
+          - name: CONFIG_PAGE
+            valueFrom:
+              configMapKeyRef:
+                name: config-page
+                key: config_values
