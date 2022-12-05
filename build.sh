@@ -26,7 +26,7 @@ fi
 export VERSION=${BUILD_NO}-$(git rev-parse --short HEAD)
 export IMAGE_TAG="${HOST}:${VERSION}"
 echo "building image: ${IMAGE_TAG}"
-docker build -t ${IMAGE_TAG} .
+docker buildx build --platform=linux/amd64 -t ${IMAGE_TAG} .
 echo "Built image ${IMAGE_TAG}"
 docker push "${IMAGE_TAG}"
 echo "Pushed image"
