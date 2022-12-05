@@ -92,14 +92,11 @@ def commit_changes(image_tag: str) -> bool:
 
 
 def pull_request(account: str, repo: str, token: str, head: str, plan: str,
-                 base: Optional[str] = "main",
-                 title: Optional[str] = None,
+                 feature: Optional[str] = None,
+                 base: Optional[str] = "main"
                  ) -> bool:
     commit = head.split("_")[1]
-    if title is None:
-        title = f"Requesting approval to deploy image {commit}"
-    else:
-        title = f"{title} Request to deploy image {commit} "
+    title = f"{feature} Requesting approval to deploy image {commit}"
     body = f"Please review terraform plan for branch {head}:\n {plan}"
     headers = {"Authorization": f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
     data = {"title": title, "body": body, "head": head, "base": base, }
@@ -158,7 +155,7 @@ def run_tf_plan(tf_path: str) -> str | None:
 
 
 def main(image_tag: str,
-         title: Optional[str] = typer.Argument(''),
+         title: Optional[str] = typer.Argument('Feature'),
          tfvars_file: Optional[str] = typer.Argument(TFVARS_FILE),
          docker_repo: Optional[str] = typer.Argument(DOCKER_REPO),
          github_repo: Optional[str] = typer.Argument(REPO),
