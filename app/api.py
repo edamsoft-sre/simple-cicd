@@ -37,5 +37,28 @@ async def read_index():
     response = RedirectResponse(url='/page2')
     return response
 
+
+def generate_config():
+    values = os.getenv("CONFIG_PAGE")
+    tf_config = f"""
+    <html>
+        <head>
+            <title> Active Terraform Deployment Config </title>
+        </head>
+        <body>
+            <h1>from config map</h1><br/><br/>
+            <div>
+            <p>{values}</p>
+            </div>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=tf_config, status_code=200)
+
+
+@app.get("/config.html")
+async def config_page():
+    return generate_config()
+
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000)
