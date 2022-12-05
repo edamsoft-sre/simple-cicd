@@ -1,17 +1,27 @@
-# Simple CICD Assignment for Turo
+# Simple CICD Assignment
 
 ## Build
 
-1. Commit latest changes to turo/app FastAPI webapp
+1. Commit latest changes to FastAPI webapp
 2. Run shell build script:
     
        ./build.sh <build_number> 
-3. This will generate a new AMD64/Linux image and push it to github.io/edamsoft/turo by default.
+3. This will generate a new AMD64/Linux image and push it to github.io by default.
    The timestamp and build_number are saved in builds/ directory for reference.
 
 ## Deploy
 
-1. Run the deploy Python script:
+1. Set environment variables:
+
+* KUBE_CONFIG_PATH
+* GITHUB_TOKEN
+* Login to github in shell using the same personal access token with rights to repo and PR
+
+2. Install deploy script dependencies:
+
+       poetry add typer 
+
+3. Run the deploy Python script:
 
         ./deploy_version.py <image_tag> <PR feature name>
 
