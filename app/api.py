@@ -1,7 +1,7 @@
 import asyncio
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse
@@ -25,9 +25,15 @@ async def index(request: Request):
 
 
 # serve static html file
+@app.get("/page2")
+async def read_index():
+    return FileResponse('app/static/page2.html')
+
+
 @app.get("/page1")
 async def read_index():
-    return FileResponse('app/static/page1.html')
+    response = RedirectResponse(url='/page2')
+    return response
 
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000)
