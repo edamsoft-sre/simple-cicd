@@ -1,6 +1,6 @@
 kube_config_context = "devops-interview"
 deployment_yaml     = "manifests/deploy.yaml"
-image_name          ="docker.io/edamsoft/turo:5-2f05fc7"
+image_name          ="docker.io/edamsoft/turo:6-3faa023"
 kube_namespace      = "eric-testing"
 acm_arn             = "arn:aws:acm:us-east-1:663118211814:certificate/9dc98912-b4aa-48c9-96d7-bf82a5691a10"
 ssl_service_yaml    = "manifests/https_service.yaml"
