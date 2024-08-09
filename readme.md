@@ -1,4 +1,5 @@
-# Simple CICD Assignment
+# A Simple CICD
+### Fast API end to end Build, Deploy on Kubernetes
 
 ## Build
 
@@ -24,6 +25,12 @@
 3. Run the deploy Python script:
 
         ./deploy_version.py <image_tag> <PR feature name>
+
+
+
+> 
+
+
 
 * Pull the latest main from Github. 
   * For future can use clone_repo method to create a standalone repo. This is not 
